@@ -5,7 +5,12 @@ import Szachownica.Figure.Bishop;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -13,18 +18,19 @@ import static org.hamcrest.Matchers.is;
 class BoardTest {
 
     private Board board;
+    int boardSize = 32;
 
     @BeforeEach
     void setUp() {
-        // Tworzymy szachownicę 8x8 przed każdym testem
-        board = new Board(8);
+        // Tworzymy szachownicę boardSize x boardSize przed każdym testem
+        board = new Board(boardSize);
     }
 
     @Test
     void testInitialBoardEmpty() {
         // Sprawdzamy, czy po utworzeniu ChessBoard wszystkie pola są EMPTY
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 assertThat("Pole [" + i + "," + j + "] powinno być EMPTY",
                     board.squareGrid[i][j].positionstate,
                     is(Board.positionState.EMPTY));
@@ -66,32 +72,35 @@ class BoardTest {
                 new int[]{5,5}  // w dół-prawo
         );
 
-        // Sprawdzamy w pętli, czy te pola są ALLOWED
-        for (int[] coords : expectedAllowed) {
-            int x = coords[0];
-            int y = coords[1];
-            assertThat("(" + x + "," + y + ") powinno być ALLOWED",
-                    board.bishop.moves[x][y].movement, is(Bishop.canMove.ALLOWED));
-        }
+        Set<List<Integer>> expectedSet = expectedAllowed.stream()
+                .map(arr -> List.of(arr[0], arr[1]))
+                .collect(Collectors.toSet());
 
-        // Natomiast wszystkie pozostałe pola (których nie wymieniliśmy),
-        // powinny być FORBIDDEN (np. bo są poza zasięgiem lub zablokowane)
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                // Jeśli dane pole nie znajduje się w liście expectedAllowed,
-                // sprawdzamy, czy jest FORBIDDEN
+        Set<List<Integer>> actualSet = new HashSet<>();
 
-                final int row = x;
-                final int col = y;
+        IntStream.range(0, boardSize).forEach(x ->
+                IntStream.range(0, boardSize).forEach(y -> {
+                    if (board.bishop.moves[x][y].movement == Bishop.canMove.ALLOWED) {
+                        System.out.println("x = " + x + ", y = " + y);
+                        actualSet.add(List.of(x, y));
+                    }
+                })
+        );
 
-                boolean isExpectedAllowed = expectedAllowed.stream()
-                        .anyMatch(e -> e[0] == row && e[1] == col);
+        assertThat(actualSet, is(expectedSet));
+    }
 
-                if (!isExpectedAllowed) {
-                    assertThat("(" + x + "," + y + ") powinno być FORBIDDEN",
-                            board.bishop.moves[x][y].movement, is(Bishop.canMove.FORBIDDEN));
-                }
-            }
-        }
+    @Test
+     void TryToInsertInInForbiddenPlaceBishop(){
+        board.addBishop(322, 322);
+    }
+
+    @Test
+    void ManyFiguresInOnePlace(){
+        board.addBishop(3, 3);
+        board.addBishop(3, 3);
+
+        board.addObstacle(2, 2);
+        board.addObstacle(2, 2);
     }
 }

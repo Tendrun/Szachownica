@@ -1,5 +1,6 @@
 package Szachownica.ChessBoard;
 
+import Szachownica.Exceptions.IllegalPlacementException;
 import Szachownica.Figure.Bishop;
 
 public class Board {
@@ -27,12 +28,32 @@ public class Board {
     }
 
     public void addBishop(int x, int y) {
-        squareGrid[x][y] = new Square(positionState.BISHOP);
-        bishop = new Bishop(size);
+        try {
+            if(squareGrid[x][y].positionstate != positionState.EMPTY){
+                throw new IllegalPlacementException("Nie możesz dać gońca na zajęte miejsce");
+            }
+
+            squareGrid[x][y] = new Square(positionState.BISHOP);
+            bishop = new Bishop(size);
+        }   catch (ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException("Niedozwolone miejsce na położenie gońca");
+        }   catch (IllegalPlacementException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
 
     public void addObstacle(int x, int y) {
-        squareGrid[x][y] = new Square(positionState.OBSTACLE);
+        try {
+            if (squareGrid[x][y].positionstate != positionState.EMPTY) {
+                throw new IllegalPlacementException("Nie możesz dać przeszkode na zajęte miejsce");
+            }
+
+            squareGrid[x][y] = new Square(positionState.OBSTACLE);
+        }   catch (ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException("Niedozwolone miejsce na położenie przeszkody");
+        }   catch (IllegalPlacementException e) {
+            System.err.println(e.getMessage());
+        }
     }
 }

@@ -6,13 +6,6 @@ public class Bishop {
     public MoveCell[][] moves;
     private final int size;
 
-    int[][] directions = {
-            { 1,  1},  // w dół, w prawo
-            { 1, -1},  // w dół, w lewo
-            {-1,  1},  // w górę, w prawo
-            {-1, -1}   // w górę, w lewo
-    };
-
 
     public enum canMove {
         FORBIDDEN,
@@ -22,6 +15,7 @@ public class Bishop {
     public Bishop(int size) {
         this.size = size;
 
+        // Stwórz wirtualną plansze gdzie są wypisywane dozwolone i niedozwolone ruchy
         moves = new MoveCell[size][size];
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
