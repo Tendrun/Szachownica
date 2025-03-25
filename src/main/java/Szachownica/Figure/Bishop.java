@@ -19,7 +19,7 @@ public class Bishop {
         moves = new MoveCell[size][size];
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
-                moves[x][y] = new MoveCell(canMove.FORBIDDEN);
+                moves[x][y] = new MoveCell(canMove.FORBIDDEN, x, y);
             }
         }
     }

@@ -2,6 +2,7 @@ package Chess;
 
 import Szachownica.ChessBoard.Board;
 import Szachownica.Figure.Bishop;
+import Szachownica.Figure.MoveCell;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 
 class BoardTest {
@@ -64,30 +66,23 @@ class BoardTest {
         // Liczymy możliwe ruchy
         board.bishop.CalculateMoves(board, 4, 4);
 
-        // Lista pól, które *wiemy*, że powinny być ALLOWED
-        List<int[]> expectedAllowed = List.of(
-                new int[]{3,3}, // w górę-lewo
-                new int[]{5,3}, // w dół-lewo
-                new int[]{3,5}, // w górę-prawo
-                new int[]{5,5}  // w dół-prawo
-        );
 
-        Set<List<Integer>> expectedSet = expectedAllowed.stream()
-                .map(arr -> List.of(arr[0], arr[1]))
-                .collect(Collectors.toSet());
+        // 1) Use a 1D array of MoveCell for the expected moves
+        MoveCell[] expectedMoveCells = new MoveCell[] {
+                new MoveCell(Bishop.canMove.ALLOWED, 3, 5),
+                new MoveCell(Bishop.canMove.ALLOWED, 5, 3),
+                new MoveCell(Bishop.canMove.ALLOWED, 3, 3),
+                new MoveCell(Bishop.canMove.ALLOWED, 5, 5)
+        };
 
-        Set<List<Integer>> actualSet = new HashSet<>();
+// 2) Flatten board.bishop.moves (which is MoveCell[][]) into a List<MoveCell>
+        List<MoveCell> actualCells = Arrays.stream(board.bishop.moves)
+                // for each row, produce a Stream<MoveCell>
+                .flatMap(Arrays::stream)
+                // collect into a single List<MoveCell>
+                .collect(Collectors.toList());
 
-        IntStream.range(0, boardSize).forEach(x ->
-                IntStream.range(0, boardSize).forEach(y -> {
-                    if (board.bishop.moves[x][y].movement == Bishop.canMove.ALLOWED) {
-                        System.out.println("x = " + x + ", y = " + y);
-                        actualSet.add(List.of(x, y));
-                    }
-                })
-        );
-
-        assertThat(actualSet, is(expectedSet));
+        assertThat(actualCells, hasItems(expectedMoveCells));
     }
 
     @Test
