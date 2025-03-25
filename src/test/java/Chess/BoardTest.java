@@ -15,6 +15,7 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.is;
 
 class BoardTest {
@@ -30,14 +31,12 @@ class BoardTest {
 
     @Test
     void testInitialBoardEmpty() {
-        // Sprawdzamy, czy po utworzeniu ChessBoard wszystkie pola są EMPTY
-        for (int i = 0; i < boardSize; i++) {
-            for (int j = 0; j < boardSize; j++) {
-                assertThat("Pole [" + i + "," + j + "] powinno być EMPTY",
-                    board.squareGrid[i][j].positionstate,
-                    is(Board.positionState.EMPTY));
-            }
-        }
+        List<Board.positionState> allStates = Arrays.stream(board.squareGrid)
+                .flatMap(Arrays::stream)
+                .map(square -> square.positionstate)
+                .collect(Collectors.toList());
+
+        assertThat(allStates, everyItem(is(Board.positionState.EMPTY)));
     }
 
     @Test
@@ -67,22 +66,29 @@ class BoardTest {
         board.bishop.CalculateMoves(board, 4, 4);
 
 
-        // 1) Use a 1D array of MoveCell for the expected moves
-        MoveCell[] expectedMoveCells = new MoveCell[] {
-                new MoveCell(Bishop.canMove.ALLOWED, 3, 5),
-                new MoveCell(Bishop.canMove.ALLOWED, 5, 3),
-                new MoveCell(Bishop.canMove.ALLOWED, 3, 3),
-                new MoveCell(Bishop.canMove.ALLOWED, 5, 5)
-        };
+        List<String> expectedCells = List.of(
+                "x = 3 y = 3 movement = ALLOWED",
+                "x = 3 y = 5 movement = ALLOWED",
+                "x = 5 y = 3 movement = ALLOWED",
+                "x = 5 y = 5 movement = ALLOWED"
+        );
 
-// 2) Flatten board.bishop.moves (which is MoveCell[][]) into a List<MoveCell>
-        List<MoveCell> actualCells = Arrays.stream(board.bishop.moves)
-                // for each row, produce a Stream<MoveCell>
+        List<String> actualCells = Arrays.stream(board.bishop.moves)
                 .flatMap(Arrays::stream)
-                // collect into a single List<MoveCell>
+                .map(MoveCell::toString)
                 .collect(Collectors.toList());
 
-        assertThat(actualCells, hasItems(expectedMoveCells));
+        assertThat(actualCells, hasItems(expectedCells.toArray(new String[0])));
+
+
+        // Check for length if are all elements are included
+        // or they are not too many
+        long allowedCount = Arrays.stream(board.bishop.moves)
+                .flatMap(Arrays::stream)
+                .filter(m -> m.movement == Bishop.canMove.ALLOWED)
+                .count();
+
+        assertThat(allowedCount, is(4L));
     }
 
     @Test
