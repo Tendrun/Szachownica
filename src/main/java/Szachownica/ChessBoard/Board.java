@@ -3,11 +3,15 @@ package Szachownica.ChessBoard;
 import Szachownica.Exceptions.IllegalPlacementException;
 import Szachownica.Figure.Bishop;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Board {
 
     public Square[][] squareGrid;
     private final int size;
-    public Bishop bishop;
+    public List<Bishop> bishop = new ArrayList<Bishop>();
+    public int i = 0;
 
     public enum positionState {
         EMPTY,
@@ -32,9 +36,8 @@ public class Board {
             if(squareGrid[x][y].positionstate != positionState.EMPTY){
                 throw new IllegalPlacementException("Nie możesz dać gońca na zajęte miejsce");
             }
-
             squareGrid[x][y] = new Square(positionState.BISHOP);
-            bishop = new Bishop(size);
+            bishop.add(new Bishop(size));
         }   catch (ArrayIndexOutOfBoundsException e) {
             throw new ArrayIndexOutOfBoundsException("Niedozwolone miejsce na położenie gońca");
         }   catch (IllegalPlacementException e) {
